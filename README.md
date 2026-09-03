@@ -10,15 +10,16 @@ evidence and recoverable change controls.
 
 | Project attribute | Current value |
 |---|---|
-| Status | In progress — Milestone 1 validated |
+| Status | In progress — Milestone 2 validated |
 | Active Directory domain | `corporate.test` |
 | Authoritative identity source | Active Directory Domain Services |
 | Existing domain controller | `DC01.corporate.test` |
-| Planned synchronization server | `SYNC01.corporate.test` |
+| Synchronization server | `SYNC01.corporate.test` — dedicated member server |
+| Synchronization technology | Microsoft Entra Cloud Sync — selected, agent installation pending |
 | Planned IAM identities | 30 controlled users |
 | Planned departments | Finance, Human Resources, Information Technology, Sales, Operations and Contractors |
 | Synchronization boundary | Dedicated IAM organisational-unit scope only |
-| Recovery checkpoint | `IAM-P1-M01-PreChange-Validated-State` |
+| Recovery checkpoints | Milestone 1 pre-change checkpoint plus paired Milestone 2 `DC01` and `SYNC01` checkpoints |
 
 ## Why this project exists
 
@@ -40,21 +41,24 @@ The implementation is designed to answer practical questions:
 - How can a failed or incorrect lifecycle operation be investigated and safely
   recovered?
 
-## Planned architecture
+## Validated foundation architecture
 
 ```mermaid
 flowchart TD
     INPUT["Approved lifecycle data"] --> AUTO["PowerShell validation and automation"]
     AUTO --> AD["Scoped IAM-Lab OU on DC01"]
     AD --> SYNC["Dedicated SYNC01 member server"]
-    SYNC --> ENTRA["Microsoft Entra ID"]
+    SYNC --> ENTRA["Microsoft Entra ID<br/>Cloud Sync planned"]
     ENTRA --> EVIDENCE["Cloud validation and audit evidence"]
 ```
 
 `DC01` remains the domain controller and authoritative directory source.
-`SYNC01` will be built as a separate domain-joined Windows member server. It
-will not host another forest and will not be promoted to a domain controller.
-Only the isolated IAM scope will be eligible for synchronization.
+`SYNC01` is a separate domain-joined Windows Server 2022 member server. It does
+not host another forest and is not a domain controller. Microsoft Entra Cloud
+Sync was selected because it supports the required scoped user, group and
+password-hash synchronization without introducing device synchronization or
+other capabilities outside this project's scope. Only the isolated IAM scope
+will be eligible for synchronization.
 
 ## Current validated outcomes
 
@@ -72,7 +76,29 @@ Milestone 1 established a trusted and recoverable starting point:
   `IAM-P1-M01-PreChange-Validated-State`.
 - Produced a reusable read-only baseline validation script.
 
+Milestone 2 established the dedicated synchronization-server foundation:
+
+- Deployed `SYNC01` with two virtual processors, 4 GB memory and an 80 GB
+  dynamically allocated virtual disk.
+- Installed and updated Windows Server 2022 Standard Evaluation with Desktop
+  Experience and VMware Tools.
+- Assigned static IPv4 address `192.168.112.20/24`, gateway
+  `192.168.112.2` and Active Directory DNS server `192.168.112.10`.
+- Joined `SYNC01` to `corporate.test` without promoting it to a domain
+  controller.
+- Validated the machine secure channel, Active Directory DNS, domain time
+  hierarchy, .NET 4.8 or later, storage, VMware Tools and HTTPS connectivity
+  to Microsoft Entra ID.
+- Preserved the 50 permanent users and the controlled Identity Threat
+  Detection and Response lab state on `DC01`.
+- Created paired powered-off recovery checkpoints for the domain controller
+  and synchronization server.
+- Selected Microsoft Entra Cloud Sync and documented why Microsoft Entra
+  Connect Sync was not required for the approved scenarios.
+
 See the complete [baseline and recovery checkpoint record](docs/Baseline-and-Recovery-Checkpoint.md).
+See the [dedicated synchronization-server foundation](docs/Dedicated-Sync-Server-Foundation.md)
+and the [Cloud Sync architecture decision](architecture/Cloud-Sync-Architecture-Decision.md).
 
 ## Evidence highlights
 
@@ -83,6 +109,16 @@ See the complete [baseline and recovery checkpoint record](docs/Baseline-and-Rec
 ### Post-checkpoint baseline
 
 ![Validated post-snapshot DC01 baseline](screenshots/m01-02-dc01-post-snapshot-baseline.png)
+
+### Dedicated synchronization-server foundation
+
+![Validated SYNC01 foundation](screenshots/m02-01-sync01-foundation-validation.png)
+
+### Paired Milestone 2 recovery checkpoints
+
+![SYNC01 validated-foundation checkpoint](screenshots/m02-02-sync01-foundation-recovery-snapshot.png)
+
+![DC01 post-domain-join checkpoint](screenshots/m02-03-dc01-paired-recovery-snapshot.png)
 
 ## Lifecycle scope
 
@@ -120,7 +156,7 @@ The completed project will implement three controlled workflows.
 |---:|---|---|
 | 0 | Local project structure and private GitHub repository | Complete |
 | 1 | Existing-environment baseline and powered-off recovery checkpoint | Complete |
-| 2 | Dedicated synchronization-server and network foundation | Planned |
+| 2 | Dedicated synchronization-server and network foundation | Complete |
 | 3 | Isolated IAM directory structure, groups and controlled identity data | Planned |
 | 4 | Joiner provisioning automation and validation | Planned |
 | 5 | Mover access-transition automation and validation | Planned |
@@ -136,10 +172,13 @@ different validation order, but the project scope will remain unchanged.
 ### PowerShell
 
 - [Validate the pre-deployment environment](scripts/Test-IAMProject1Baseline.ps1)
+- [Validate the dedicated synchronization-server foundation](scripts/Test-IAMProject1SyncFoundation.ps1)
 
 ### Documentation
 
 - [Baseline and recovery checkpoint](docs/Baseline-and-Recovery-Checkpoint.md)
+- [Dedicated synchronization-server foundation](docs/Dedicated-Sync-Server-Foundation.md)
+- [Microsoft Entra Cloud Sync architecture decision](architecture/Cloud-Sync-Architecture-Decision.md)
 
 ## Repository contents
 
@@ -164,6 +203,8 @@ packages and is not part of the public repository.
 - Existing SOC identities are preserved rather than repurposed.
 - New IAM objects use a separately scoped directory structure.
 - The synchronization role is separated from the domain-controller role.
+- `SYNC01` is treated as an identity control-plane asset and will not host
+  unrelated workloads.
 - Only approved milestone files are copied into clean upload packages.
 - Screenshots are reviewed for personal and cloud-environment identifiers.
 - Destructive lifecycle tests use controlled identities and explicit recovery
@@ -173,13 +214,15 @@ packages and is not part of the public repository.
 ## Current limitations
 
 - The current laboratory has one domain controller.
-- The synchronization server has not yet been deployed.
 - Microsoft Entra synchronization has not yet been enabled.
 - Joiner, mover and leaver identities have not yet been created.
+- The Cloud Sync provisioning agent has not yet been installed or registered.
+- The laboratory will use one Cloud Sync agent; a production design should use
+  multiple agents when high availability is required.
 - VMware checkpoints provide laboratory rollback, not production backup or
   cross-platform recovery.
-- The final synchronization technology will be selected only after its feature
-  requirements are validated against the project scenarios.
+- Cloud Sync does not provide device synchronization or Hybrid Microsoft Entra
+  Join. Those capabilities are not required by this project's approved scope.
 
 These are current milestone boundaries, not claims of completed capability.
 Later documentation will retain the distinction between laboratory
