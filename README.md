@@ -10,16 +10,16 @@ evidence and recoverable change controls.
 
 | Project attribute | Current value |
 |---|---|
-| Status | In progress — Milestone 2 validated |
+| Status | In progress — Milestone 3 validated |
 | Active Directory domain | `corporate.test` |
 | Authoritative identity source | Active Directory Domain Services |
 | Existing domain controller | `DC01.corporate.test` |
 | Synchronization server | `SYNC01.corporate.test` — dedicated member server |
 | Synchronization technology | Microsoft Entra Cloud Sync — selected, agent installation pending |
-| Planned IAM identities | 30 controlled users |
-| Planned departments | Finance, Human Resources, Information Technology, Sales, Operations and Contractors |
-| Synchronization boundary | Dedicated IAM organisational-unit scope only |
-| Recovery checkpoints | Milestone 1 pre-change checkpoint plus paired Milestone 2 `DC01` and `SYNC01` checkpoints |
+| Controlled IAM identities | 30 active synthetic users — 25 employees and five contractors |
+| Controlled departments | Finance, Human Resources, Information Technology, Sales, Operations and Contractors |
+| Synchronization boundary | Protected `IAM-Lab` organisational-unit scope only |
+| Recovery checkpoints | Milestone 1 pre-change, paired Milestone 2 infrastructure and Milestone 3 identity-foundation checkpoints |
 
 ## Why this project exists
 
@@ -96,9 +96,37 @@ Milestone 2 established the dedicated synchronization-server foundation:
 - Selected Microsoft Entra Cloud Sync and documented why Microsoft Entra
   Connect Sync was not required for the approved scenarios.
 
+Milestone 3 established the controlled identity foundation:
+
+- Created a protected 16-OU `IAM-Lab` hierarchy that remains separate from the
+  earlier SOC and identity-threat-detection objects.
+- Added the verified Entra sign-in suffix
+  `danielcloudlaboutlook258.onmicrosoft.com` without renaming the
+  `corporate.test` AD DS namespace.
+- Created 15 Global Security groups for workforce classification,
+  departmental membership and business-system access.
+- Created a sanitised 30-record workforce dataset containing 25 employees and
+  five time-bounded contractors with no password or credential columns.
+- Detected three pre-existing `sAMAccountName` collisions before provisioning
+  and resolved only the planned IAM identifiers with deterministic employee-ID
+  suffixes.
+- Provisioned the controlled population through disabled staging, applied 24
+  manager relationships and 140 direct group memberships, then enabled only
+  date-eligible active records.
+- Generated unique random initial passwords in memory without displaying or
+  exporting them.
+- Moved the existing `SYNC01` computer account into the protected
+  `IAM-Lab/Infrastructure/Servers` OU without changing the machine trust.
+- Preserved all 50 permanent SOC users, all five disabled IDTR users, the empty
+  high-value group, seven required services and the Azure Monitor Agent.
+- Created the powered-off `IAM-P1-M03-Controlled-Identity-Foundation`
+  checkpoint and validated the environment again after restart.
+
 See the complete [baseline and recovery checkpoint record](docs/Baseline-and-Recovery-Checkpoint.md).
 See the [dedicated synchronization-server foundation](docs/Dedicated-Sync-Server-Foundation.md)
 and the [Cloud Sync architecture decision](architecture/Cloud-Sync-Architecture-Decision.md).
+See the [controlled identity foundation](docs/Controlled-Identity-Foundation.md)
+for the Milestone 3 design, implementation and evidence.
 
 ## Evidence highlights
 
@@ -119,6 +147,20 @@ and the [Cloud Sync architecture decision](architecture/Cloud-Sync-Architecture-
 ![SYNC01 validated-foundation checkpoint](screenshots/m02-02-sync01-foundation-recovery-snapshot.png)
 
 ![DC01 post-domain-join checkpoint](screenshots/m02-03-dc01-paired-recovery-snapshot.png)
+
+### Controlled identity foundation
+
+![Protected IAM-Lab OU structure](screenshots/m03-01-iam-lab-ou-structure.png)
+
+![Controlled Finance identities](screenshots/m03-02-controlled-finance-identities.png)
+
+![Representative identity governance](screenshots/m03-03-representative-identity-governance.png)
+
+![Comprehensive identity validation](screenshots/m03-04-comprehensive-identity-validation.png)
+
+![Milestone 3 recovery checkpoint](screenshots/m03-05-dc01-controlled-identity-recovery-snapshot.png)
+
+![Post-snapshot identity validation](screenshots/m03-06-dc01-post-snapshot-validation.png)
 
 ## Lifecycle scope
 
@@ -157,7 +199,7 @@ The completed project will implement three controlled workflows.
 | 0 | Local project structure and private GitHub repository | Complete |
 | 1 | Existing-environment baseline and powered-off recovery checkpoint | Complete |
 | 2 | Dedicated synchronization-server and network foundation | Complete |
-| 3 | Isolated IAM directory structure, groups and controlled identity data | Planned |
+| 3 | Isolated IAM directory structure, groups and controlled identity data | Complete |
 | 4 | Joiner provisioning automation and validation | Planned |
 | 5 | Mover access-transition automation and validation | Planned |
 | 6 | Leaver containment, recovery and validation | Planned |
@@ -173,11 +215,19 @@ different validation order, but the project scope will remain unchanged.
 
 - [Validate the pre-deployment environment](scripts/Test-IAMProject1Baseline.ps1)
 - [Validate the dedicated synchronization-server foundation](scripts/Test-IAMProject1SyncFoundation.ps1)
+- [Create the directory and group foundation](scripts/Initialize-IAMProject1DirectoryFoundation.ps1)
+- [Provision the controlled identity population](scripts/Import-IAMProject1ControlledUsers.ps1)
+- [Validate the controlled identity foundation](scripts/Test-IAMProject1ControlledIdentityFoundation.ps1)
+
+### Data
+
+- [Controlled 30-user identity dataset](data/iam-project1-controlled-users.csv)
 
 ### Documentation
 
 - [Baseline and recovery checkpoint](docs/Baseline-and-Recovery-Checkpoint.md)
 - [Dedicated synchronization-server foundation](docs/Dedicated-Sync-Server-Foundation.md)
+- [Controlled identity foundation](docs/Controlled-Identity-Foundation.md)
 - [Microsoft Entra Cloud Sync architecture decision](architecture/Cloud-Sync-Architecture-Decision.md)
 
 ## Repository contents
@@ -215,7 +265,8 @@ packages and is not part of the public repository.
 
 - The current laboratory has one domain controller.
 - Microsoft Entra synchronization has not yet been enabled.
-- Joiner, mover and leaver identities have not yet been created.
+- The controlled baseline population exists, but joiner, mover and leaver
+  transaction workflows have not yet been implemented.
 - The Cloud Sync provisioning agent has not yet been installed or registered.
 - The laboratory will use one Cloud Sync agent; a production design should use
   multiple agents when high availability is required.
