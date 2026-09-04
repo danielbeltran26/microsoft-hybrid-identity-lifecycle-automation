@@ -10,16 +10,16 @@ evidence and recoverable change controls.
 
 | Project attribute | Current value |
 |---|---|
-| Status | In progress — Milestone 3 validated |
+| Status | In progress — Milestone 4 validated |
 | Active Directory domain | `corporate.test` |
 | Authoritative identity source | Active Directory Domain Services |
 | Existing domain controller | `DC01.corporate.test` |
 | Synchronization server | `SYNC01.corporate.test` — dedicated member server |
 | Synchronization technology | Microsoft Entra Cloud Sync — selected, agent installation pending |
-| Controlled IAM identities | 30 active synthetic users — 25 employees and five contractors |
+| Controlled IAM identities | 33 active synthetic users — 27 employees and six contractors |
 | Controlled departments | Finance, Human Resources, Information Technology, Sales, Operations and Contractors |
 | Synchronization boundary | Protected `IAM-Lab` organisational-unit scope only |
-| Recovery checkpoints | Milestone 1 pre-change, paired Milestone 2 infrastructure and Milestone 3 identity-foundation checkpoints |
+| Recovery checkpoints | Milestone 1 pre-change, paired Milestone 2 infrastructure, Milestone 3 identity foundation and Milestone 4 joiner-automation checkpoints |
 
 ## Why this project exists
 
@@ -122,11 +122,38 @@ Milestone 3 established the controlled identity foundation:
 - Created the powered-off `IAM-P1-M03-Controlled-Identity-Foundation`
   checkpoint and validated the environment again after restart.
 
+Milestone 4 implemented the controlled joiner workflow:
+
+- Accepted three approved synthetic joiner requests: two employees and one
+  time-bounded contractor.
+- Verified the request dataset SHA-256 digest, approvals, dates, manager
+  references, target OUs, Global Security groups and identity collisions before
+  the first directory write.
+- Created each new identity in a disabled staging state with a separate
+  cryptographically generated 24-character password that was never displayed,
+  logged or exported.
+- Assigned three manager relationships and 13 approved direct memberships,
+  applied the contractor expiration control and enabled accounts only after
+  governance configuration succeeded.
+- Produced a 25-event transaction audit using correlation ID
+  `M04-JOINER-20260904-182309` and validated that it contained no failed events
+  or secret-bearing fields.
+- Replayed the same approved requests and proved idempotency: zero created or
+  updated accounts, zero access changes and three explicit no-change decisions.
+- Increased the controlled population from 30 to 33 identities, manager
+  relationships from 24 to 27 and direct memberships from 140 to 153 while
+  preserving the existing SOC and IDTR environments.
+- Created the powered-off `IAM-P1-M04-Controlled-Joiner-Automation` checkpoint
+  and validated the complete state after restart.
+
 See the complete [baseline and recovery checkpoint record](docs/Baseline-and-Recovery-Checkpoint.md).
 See the [dedicated synchronization-server foundation](docs/Dedicated-Sync-Server-Foundation.md)
 and the [Cloud Sync architecture decision](architecture/Cloud-Sync-Architecture-Decision.md).
 See the [controlled identity foundation](docs/Controlled-Identity-Foundation.md)
 for the Milestone 3 design, implementation and evidence.
+See the [controlled joiner provisioning automation](docs/Controlled-Joiner-Provisioning-Automation.md)
+and the [joiner operations runbook](runbooks/01-controlled-joiner-provisioning.md)
+for the Milestone 4 workflow, evidence and recovery controls.
 
 ## Evidence highlights
 
@@ -161,6 +188,26 @@ for the Milestone 3 design, implementation and evidence.
 ![Milestone 3 recovery checkpoint](screenshots/m03-05-dc01-controlled-identity-recovery-snapshot.png)
 
 ![Post-snapshot identity validation](screenshots/m03-06-dc01-post-snapshot-validation.png)
+
+### Controlled joiner automation
+
+![Joiner preflight validation](screenshots/m04-01-joiner-preflight-validation.png)
+
+![Approved joiner dataset validation](screenshots/m04-02-approved-joiner-dataset-validation.png)
+
+![Controlled joiner provisioning](screenshots/m04-03-controlled-joiner-provisioning.png)
+
+![Correlated transaction audit validation](screenshots/m04-04-joiner-transaction-audit-validation.png)
+
+![Approved joiners in Active Directory](screenshots/m04-05-approved-joiners-aduc.png)
+
+![Time-bounded contractor governance](screenshots/m04-06-contractor-joiner-governance.png)
+
+![Idempotent joiner replay](screenshots/m04-07-idempotent-joiner-replay.png)
+
+![Milestone 4 recovery checkpoint](screenshots/m04-08-dc01-joiner-recovery-snapshot.png)
+
+![Post-snapshot joiner validation](screenshots/m04-09-dc01-post-snapshot-joiner-validation.png)
 
 ## Lifecycle scope
 
@@ -200,7 +247,7 @@ The completed project will implement three controlled workflows.
 | 1 | Existing-environment baseline and powered-off recovery checkpoint | Complete |
 | 2 | Dedicated synchronization-server and network foundation | Complete |
 | 3 | Isolated IAM directory structure, groups and controlled identity data | Complete |
-| 4 | Joiner provisioning automation and validation | Planned |
+| 4 | Joiner provisioning automation and validation | Complete |
 | 5 | Mover access-transition automation and validation | Planned |
 | 6 | Leaver containment, recovery and validation | Planned |
 | 7 | Scoped Microsoft Entra synchronization and cloud-state validation | Planned |
@@ -218,16 +265,24 @@ different validation order, but the project scope will remain unchanged.
 - [Create the directory and group foundation](scripts/Initialize-IAMProject1DirectoryFoundation.ps1)
 - [Provision the controlled identity population](scripts/Import-IAMProject1ControlledUsers.ps1)
 - [Validate the controlled identity foundation](scripts/Test-IAMProject1ControlledIdentityFoundation.ps1)
+- [Provision approved joiner requests](scripts/Invoke-IAMProject1JoinerProvisioning.ps1)
+- [Validate correlated joiner audit records](scripts/Test-IAMProject1JoinerAudit.ps1)
+- [Validate effective joiner and preserved environment state](scripts/Test-IAMProject1JoinerState.ps1)
 
 ### Data
 
 - [Controlled 30-user identity dataset](data/iam-project1-controlled-users.csv)
+- [Approved three-record joiner request dataset](data/iam-project1-joiner-requests.csv)
+- [Initial joiner transaction audit](data/iam-project1-joiner-provisioning-audit.csv)
+- [Idempotent replay audit](data/iam-project1-joiner-idempotent-replay-audit.csv)
 
 ### Documentation
 
 - [Baseline and recovery checkpoint](docs/Baseline-and-Recovery-Checkpoint.md)
 - [Dedicated synchronization-server foundation](docs/Dedicated-Sync-Server-Foundation.md)
 - [Controlled identity foundation](docs/Controlled-Identity-Foundation.md)
+- [Controlled joiner provisioning automation](docs/Controlled-Joiner-Provisioning-Automation.md)
+- [Controlled joiner operations runbook](runbooks/01-controlled-joiner-provisioning.md)
 - [Microsoft Entra Cloud Sync architecture decision](architecture/Cloud-Sync-Architecture-Decision.md)
 
 ## Repository contents
@@ -265,8 +320,8 @@ packages and is not part of the public repository.
 
 - The current laboratory has one domain controller.
 - Microsoft Entra synchronization has not yet been enabled.
-- The controlled baseline population exists, but joiner, mover and leaver
-  transaction workflows have not yet been implemented.
+- Joiner automation is complete; mover and leaver transaction workflows have
+  not yet been implemented.
 - The Cloud Sync provisioning agent has not yet been installed or registered.
 - The laboratory will use one Cloud Sync agent; a production design should use
   multiple agents when high availability is required.
