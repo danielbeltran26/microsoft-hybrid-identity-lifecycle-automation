@@ -10,16 +10,16 @@ evidence and recoverable change controls.
 
 | Project attribute | Current value |
 |---|---|
-| Status | In progress — Milestone 4 validated |
+| Status | In progress — Milestone 5 validated |
 | Active Directory domain | `corporate.test` |
 | Authoritative identity source | Active Directory Domain Services |
 | Existing domain controller | `DC01.corporate.test` |
 | Synchronization server | `SYNC01.corporate.test` — dedicated member server |
 | Synchronization technology | Microsoft Entra Cloud Sync — selected, agent installation pending |
-| Controlled IAM identities | 33 active synthetic users — 27 employees and six contractors |
+| Controlled IAM identities | 33 active synthetic users — 28 employees and five contractors |
 | Controlled departments | Finance, Human Resources, Information Technology, Sales, Operations and Contractors |
 | Synchronization boundary | Protected `IAM-Lab` organisational-unit scope only |
-| Recovery checkpoints | Milestone 1 pre-change, paired Milestone 2 infrastructure, Milestone 3 identity foundation and Milestone 4 joiner-automation checkpoints |
+| Recovery checkpoints | Milestone 1 pre-change, paired Milestone 2 infrastructure, Milestone 3 identity foundation, Milestone 4 joiner-automation and Milestone 5 mover-automation checkpoints |
 
 ## Why this project exists
 
@@ -146,6 +146,31 @@ Milestone 4 implemented the controlled joiner workflow:
 - Created the powered-off `IAM-P1-M04-Controlled-Joiner-Automation` checkpoint
   and validated the complete state after restart.
 
+Milestone 5 implemented the controlled mover workflow:
+
+- Accepted three approved synthetic mover requests covering two
+  cross-department transfers and one contractor-to-employee conversion.
+- Verified the request dataset SHA-256 digest, approval state, current identity
+  state, target managers, protected OUs and Global Security groups before any
+  directory write.
+- Removed six obsolete memberships before granting eight approved destination
+  memberships, preventing temporary access accumulation during transition.
+- Updated three job and department profiles, changed three managers and moved
+  all three identities into their approved destination OUs.
+- Converted Mason Cole from contractor to employee, removed both contractor
+  memberships and cleared the former time-bounded account expiration.
+- Produced a 29-event transaction audit using correlation ID
+  `M05-MOVER-20260904-200349` and validated its ordering, correlation and lack
+  of secret-bearing content.
+- Replayed the same approved requests and proved idempotency with three
+  explicit no-change decisions and zero directory modifications under
+  correlation ID `M05-MOVER-20260904-203431`.
+- Preserved 33 enabled controlled identities while changing the governed mix
+  to 28 employees and five contractors and increasing approved direct IAM
+  memberships from 153 to 155.
+- Created the powered-off `IAM-P1-M05-Controlled-Mover-Automation` checkpoint
+  and validated the complete mover state after restart.
+
 See the complete [baseline and recovery checkpoint record](docs/Baseline-and-Recovery-Checkpoint.md).
 See the [dedicated synchronization-server foundation](docs/Dedicated-Sync-Server-Foundation.md)
 and the [Cloud Sync architecture decision](architecture/Cloud-Sync-Architecture-Decision.md).
@@ -154,6 +179,9 @@ for the Milestone 3 design, implementation and evidence.
 See the [controlled joiner provisioning automation](docs/Controlled-Joiner-Provisioning-Automation.md)
 and the [joiner operations runbook](runbooks/01-controlled-joiner-provisioning.md)
 for the Milestone 4 workflow, evidence and recovery controls.
+See the [controlled mover access-transition automation](docs/Controlled-Mover-Access-Transition-Automation.md)
+and the [mover operations runbook](runbooks/02-controlled-mover-access-transition.md)
+for the Milestone 5 workflow, least-privilege sequence and audit evidence.
 
 ## Evidence highlights
 
@@ -209,6 +237,30 @@ for the Milestone 4 workflow, evidence and recovery controls.
 
 ![Post-snapshot joiner validation](screenshots/m04-09-dc01-post-snapshot-joiner-validation.png)
 
+### Controlled mover automation
+
+![Mover preflight validation](screenshots/m05-01-mover-preflight-validation.png)
+
+![Approved mover dataset validation](screenshots/m05-02-approved-mover-dataset-validation.png)
+
+![DC01 mover dataset validation](screenshots/m05-03-dc01-mover-dataset-validation.png)
+
+![Controlled mover transition](screenshots/m05-03-controlled-mover-transition.png)
+
+![Mover transaction audit validation](screenshots/m05-04-mover-transaction-audit-validation.png)
+
+![Contractor-to-employee governance](screenshots/m05-05-contractor-to-employee-governance.png)
+
+![Approved movers in Active Directory](screenshots/m05-06-approved-movers-aduc.png)
+
+![Comprehensive mover validation](screenshots/m05-07-comprehensive-mover-validation.png)
+
+![Idempotent mover replay](screenshots/m05-08-idempotent-mover-replay.png)
+
+![Milestone 5 recovery checkpoint](screenshots/m05-09-dc01-mover-recovery-snapshot.png)
+
+![Post-snapshot mover validation](screenshots/m05-10-dc01-post-snapshot-mover-validation.png)
+
 ## Lifecycle scope
 
 The completed project will implement three controlled workflows.
@@ -248,7 +300,7 @@ The completed project will implement three controlled workflows.
 | 2 | Dedicated synchronization-server and network foundation | Complete |
 | 3 | Isolated IAM directory structure, groups and controlled identity data | Complete |
 | 4 | Joiner provisioning automation and validation | Complete |
-| 5 | Mover access-transition automation and validation | Planned |
+| 5 | Mover access-transition automation and validation | Complete |
 | 6 | Leaver containment, recovery and validation | Planned |
 | 7 | Scoped Microsoft Entra synchronization and cloud-state validation | Planned |
 | 8 | Integrated lifecycle testing and portfolio quality review | Planned |
@@ -268,6 +320,9 @@ different validation order, but the project scope will remain unchanged.
 - [Provision approved joiner requests](scripts/Invoke-IAMProject1JoinerProvisioning.ps1)
 - [Validate correlated joiner audit records](scripts/Test-IAMProject1JoinerAudit.ps1)
 - [Validate effective joiner and preserved environment state](scripts/Test-IAMProject1JoinerState.ps1)
+- [Apply approved mover access transitions](scripts/Invoke-IAMProject1MoverTransition.ps1)
+- [Validate correlated mover audit records](scripts/Test-IAMProject1MoverAudit.ps1)
+- [Validate effective mover and preserved environment state](scripts/Test-IAMProject1MoverState.ps1)
 
 ### Data
 
@@ -275,6 +330,9 @@ different validation order, but the project scope will remain unchanged.
 - [Approved three-record joiner request dataset](data/iam-project1-joiner-requests.csv)
 - [Initial joiner transaction audit](data/iam-project1-joiner-provisioning-audit.csv)
 - [Idempotent replay audit](data/iam-project1-joiner-idempotent-replay-audit.csv)
+- [Approved three-record mover request dataset](data/iam-project1-mover-requests.csv)
+- [Initial mover transition audit](data/iam-project1-mover-transition-audit.csv)
+- [Idempotent mover replay audit](data/iam-project1-mover-idempotent-replay-audit.csv)
 
 ### Documentation
 
@@ -283,6 +341,8 @@ different validation order, but the project scope will remain unchanged.
 - [Controlled identity foundation](docs/Controlled-Identity-Foundation.md)
 - [Controlled joiner provisioning automation](docs/Controlled-Joiner-Provisioning-Automation.md)
 - [Controlled joiner operations runbook](runbooks/01-controlled-joiner-provisioning.md)
+- [Controlled mover access-transition automation](docs/Controlled-Mover-Access-Transition-Automation.md)
+- [Controlled mover operations runbook](runbooks/02-controlled-mover-access-transition.md)
 - [Microsoft Entra Cloud Sync architecture decision](architecture/Cloud-Sync-Architecture-Decision.md)
 
 ## Repository contents
@@ -320,8 +380,8 @@ packages and is not part of the public repository.
 
 - The current laboratory has one domain controller.
 - Microsoft Entra synchronization has not yet been enabled.
-- Joiner automation is complete; mover and leaver transaction workflows have
-  not yet been implemented.
+- Joiner and mover automation are complete; the leaver containment and recovery
+  workflow has not yet been implemented.
 - The Cloud Sync provisioning agent has not yet been installed or registered.
 - The laboratory will use one Cloud Sync agent; a production design should use
   multiple agents when high availability is required.
