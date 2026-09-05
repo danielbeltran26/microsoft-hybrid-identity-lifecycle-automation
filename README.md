@@ -10,15 +10,16 @@ evidence and recoverable change controls.
 
 | Project attribute | Current value |
 |---|---|
-| Status | In progress — Milestone 7 validated |
+| Status | Complete — Milestone 8 validated |
 | Active Directory domain | `corporate.test` |
 | Authoritative identity source | Active Directory Domain Services |
 | Existing domain controller | `DC01.corporate.test` |
 | Synchronization server | `SYNC01.corporate.test` — dedicated member server |
 | Synchronization technology | Microsoft Entra Cloud Sync — deployed and validated |
-| Controlled IAM identities | 33 retained synthetic users — 30 enabled; 28 employees and five contractors |
+| Controlled IAM identities | 34 retained synthetic users — 30 enabled; 29 employees and five contractors |
 | Controlled departments | Finance, Human Resources, Information Technology, Sales, Operations and Contractors |
 | Synchronization boundary | Protected `IAM-Lab` organisational-unit scope only |
+| Final lifecycle test | `IAM3001` validated through Joiner, Mover and Leaver states in AD DS and Microsoft Entra ID |
 | Recovery checkpoints | Milestone 1 pre-change, paired Milestone 2 infrastructure, Milestone 3 identity foundation, Milestone 4 joiner-automation, Milestone 5 mover-automation and Milestone 6 leaver-automation checkpoints |
 
 ## Why this project exists
@@ -218,6 +219,29 @@ Milestone 7 implemented scoped Microsoft Entra Cloud Sync:
 - Added a reusable read-only Microsoft Graph validation script for independent
   cloud-state verification.
 
+Milestone 8 completed the integrated lifecycle test and portfolio validation:
+
+- Used one approved synthetic identity, `IAM3001` Nora Whitfield, across the
+  complete Joiner, Mover and Leaver sequence.
+- Provisioned the identity into Finance with an approved manager, job profile
+  and five least-privilege IAM memberships, then independently validated its
+  11-event audit and effective AD DS state.
+- Confirmed the joined identity in Microsoft Entra ID with synchronization
+  enabled and the same five Windows Server AD sourced memberships.
+- Transitioned the identity to Information Technology by removing both
+  obsolete Finance memberships before granting two approved IT memberships,
+  while preserving five total direct memberships.
+- Validated the Mover transaction through a ten-event correlated audit,
+  effective AD DS state, Cloud Sync on-demand update and Microsoft Graph.
+- Disabled the identity, removed all five remaining memberships and moved the
+  retained object to the protected Leavers OU without deleting it or changing
+  its password.
+- Confirmed the final Microsoft Entra state: retained, disabled,
+  on-premises-synchronized and a member of zero groups.
+- Preserved a complete 19-image evidence chain, nine phase-specific scripts
+  and a final read-only validator with no failed audit events or
+  secret-bearing evidence.
+
 See the complete [baseline and recovery checkpoint record](docs/Baseline-and-Recovery-Checkpoint.md).
 See the [dedicated synchronization-server foundation](docs/Dedicated-Sync-Server-Foundation.md)
 and the [Cloud Sync architecture decision](architecture/Cloud-Sync-Architecture-Decision.md).
@@ -235,6 +259,14 @@ for the Milestone 6 workflow, fail-safe resume and governed recovery evidence.
 See the [scoped Microsoft Entra Cloud Sync deployment and validation](docs/Scoped-Microsoft-Entra-Cloud-Sync.md)
 for the Milestone 7 configuration boundary, pilot rollout and verified cloud
 state.
+
+See the [integrated hybrid lifecycle test](docs/Integrated-Hybrid-Identity-Lifecycle-Validation.md)
+and the [integrated lifecycle operations runbook](runbooks/04-integrated-hybrid-lifecycle-test.md)
+for the Milestone 8 execution order, correlated evidence, final state and
+recovery considerations.
+See [lessons learned](lessons-learned.md) for the principal architecture,
+automation, recovery, troubleshooting and evidence-quality findings from the
+complete project.
 
 ## Evidence highlights
 
@@ -370,6 +402,46 @@ state.
 
 ![Comprehensive Cloud Sync validation](screenshots/m07-12-cloud-sync-comprehensive-validation.png)
 
+### Integrated hybrid lifecycle validation
+
+![DC01 pre-test integrity baseline](screenshots/m08-01-dc01-pretest-integrity-baseline.png)
+
+![SYNC01 Cloud Sync agent baseline](screenshots/m08-02-sync01-cloud-sync-agent-pretest-baseline.png)
+
+![Microsoft Entra pre-test baseline](screenshots/m08-03-entra-pretest-cloud-sync-baseline.png)
+
+![Integrated lifecycle plan preflight](screenshots/m08-04-integrated-lifecycle-plan-preflight.png)
+
+![Integrated Joiner execution](screenshots/m08-05-integrated-joiner-execution.png)
+
+![Integrated Joiner audit and AD state](screenshots/m08-06-integrated-joiner-audit-and-ad-state.png)
+
+![Integrated Joiner Entra memberships](screenshots/m08-07-integrated-joiner-entra-group-memberships.png)
+
+![Integrated Joiner cloud validation](screenshots/m08-08-integrated-joiner-cloud-state-validation.png)
+
+![Integrated Mover execution](screenshots/m08-09-integrated-mover-execution.png)
+
+![Integrated Mover audit and AD state](screenshots/m08-10-integrated-mover-audit-and-ad-state.png)
+
+![Integrated Mover Cloud Sync update](screenshots/m08-11-integrated-mover-cloud-sync-update.png)
+
+![Integrated Mover Entra memberships](screenshots/m08-12-integrated-mover-entra-group-memberships.png)
+
+![Integrated Mover cloud validation](screenshots/m08-13-integrated-mover-cloud-state-validation.png)
+
+![Integrated Leaver execution](screenshots/m08-14-integrated-leaver-execution.png)
+
+![Integrated Leaver audit and AD state](screenshots/m08-15-integrated-leaver-audit-and-ad-state.png)
+
+![Integrated Leaver Cloud Sync containment](screenshots/m08-16-integrated-leaver-cloud-sync-containment.png)
+
+![Integrated Leaver zero group memberships](screenshots/m08-17-integrated-leaver-zero-group-memberships.png)
+
+![Integrated Leaver cloud validation](screenshots/m08-18-integrated-leaver-cloud-state-validation.png)
+
+![Final integrated lifecycle validation](screenshots/m08-19-integrated-lifecycle-final-validation.png)
+
 ## Lifecycle scope
 
 The project implements three controlled workflows.
@@ -412,7 +484,7 @@ The project implements three controlled workflows.
 | 5 | Mover access-transition automation and validation | Complete |
 | 6 | Leaver containment, recovery and validation | Complete |
 | 7 | Scoped Microsoft Entra synchronization and cloud-state validation | Complete |
-| 8 | Integrated lifecycle testing and portfolio quality review | Planned |
+| 8 | Integrated lifecycle testing and portfolio quality review | Complete |
 
 Milestone boundaries may be refined when a technical dependency requires a
 different validation order, but the project scope will remain unchanged.
@@ -436,6 +508,16 @@ different validation order, but the project scope will remain unchanged.
 - [Perform an approved leaver recovery](scripts/Restore-IAMProject1Leaver.ps1)
 - [Validate leaver, recovery, audit and preserved environment state](scripts/Test-IAMProject1LeaverState.ps1)
 - [Validate the synchronized Microsoft Entra population](scripts/Test-IAMProject1CloudSyncState.ps1)
+- [Validate the integrated lifecycle plan](scripts/Test-IAMProject1IntegratedLifecyclePreflight.ps1)
+- [Execute the integrated Joiner](scripts/Invoke-IAMProject1IntegratedJoiner.ps1)
+- [Validate the integrated Joiner cloud state](scripts/Test-IAMProject1IntegratedJoinerCloudState.ps1)
+- [Execute the integrated Mover](scripts/Invoke-IAMProject1IntegratedMover.ps1)
+- [Validate the integrated Mover state](scripts/Test-IAMProject1IntegratedMoverState.ps1)
+- [Validate the integrated Mover cloud state](scripts/Test-IAMProject1IntegratedMoverCloudState.ps1)
+- [Execute the integrated Leaver](scripts/Invoke-IAMProject1IntegratedLeaver.ps1)
+- [Validate the integrated Leaver state](scripts/Test-IAMProject1IntegratedLeaverState.ps1)
+- [Validate the integrated Leaver cloud state](scripts/Test-IAMProject1IntegratedLeaverCloudState.ps1)
+- [Validate the final integrated lifecycle state](scripts/Test-IAMProject1IntegratedLifecycleState.ps1)
 
 ### Data
 
@@ -454,6 +536,7 @@ different validation order, but the project scope will remain unchanged.
 - [Governed leaver recovery audit](data/iam-project1-leaver-governed-recovery-audit.csv)
 - [Leaver re-containment audit](data/iam-project1-leaver-recontainment-audit.csv)
 - [Leaver re-containment recovery manifest](data/iam-project1-leaver-recontainment-recovery-manifest.csv)
+- [Approved integrated lifecycle test record](data/iam-project1-integrated-lifecycle-test.csv)
 
 ### Documentation
 
@@ -468,6 +551,9 @@ different validation order, but the project scope will remain unchanged.
 - [Controlled leaver operations runbook](runbooks/03-controlled-leaver-containment-and-recovery.md)
 - [Microsoft Entra Cloud Sync architecture decision](architecture/Cloud-Sync-Architecture-Decision.md)
 - [Scoped Microsoft Entra Cloud Sync deployment and validation](docs/Scoped-Microsoft-Entra-Cloud-Sync.md)
+- [Integrated hybrid identity lifecycle validation](docs/Integrated-Hybrid-Identity-Lifecycle-Validation.md)
+- [Integrated hybrid lifecycle operations runbook](runbooks/04-integrated-hybrid-lifecycle-test.md)
+- [Project lessons learned](lessons-learned.md)
 
 ## Repository contents
 
@@ -510,9 +596,10 @@ packages and is not part of the public repository.
 - Cloud Sync does not provide device synchronization or Hybrid Microsoft Entra
   Join. Those capabilities are not required by this project's approved scope.
 
-These are current milestone boundaries, not claims of completed capability.
-Later documentation will retain the distinction between laboratory
-implementation and production design.
+These limitations do not change the validated laboratory outcomes. The
+repository retains a clear distinction between implemented laboratory controls
+and the additional resilience, monitoring and approval integration required in
+production.
 
 ## Evidence standard
 
