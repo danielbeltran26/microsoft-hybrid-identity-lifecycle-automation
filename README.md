@@ -10,12 +10,12 @@ evidence and recoverable change controls.
 
 | Project attribute | Current value |
 |---|---|
-| Status | In progress — Milestone 6 validated |
+| Status | In progress — Milestone 7 validated |
 | Active Directory domain | `corporate.test` |
 | Authoritative identity source | Active Directory Domain Services |
 | Existing domain controller | `DC01.corporate.test` |
 | Synchronization server | `SYNC01.corporate.test` — dedicated member server |
-| Synchronization technology | Microsoft Entra Cloud Sync — selected, agent installation pending |
+| Synchronization technology | Microsoft Entra Cloud Sync — deployed and validated |
 | Controlled IAM identities | 33 retained synthetic users — 30 enabled; 28 employees and five contractors |
 | Controlled departments | Finance, Human Resources, Information Technology, Sales, Operations and Contractors |
 | Synchronization boundary | Protected `IAM-Lab` organisational-unit scope only |
@@ -48,7 +48,7 @@ flowchart TD
     INPUT["Approved lifecycle data"] --> AUTO["PowerShell validation and automation"]
     AUTO --> AD["Scoped IAM-Lab OU on DC01"]
     AD --> SYNC["Dedicated SYNC01 member server"]
-    SYNC --> ENTRA["Microsoft Entra ID<br/>Cloud Sync planned"]
+    SYNC --> ENTRA["Microsoft Entra ID<br/>Cloud Sync active"]
     ENTRA --> EVIDENCE["Cloud validation and audit evidence"]
 ```
 
@@ -197,6 +197,27 @@ Milestone 6 implemented controlled leaver containment and recovery:
   and validated the complete containment, recovery, audit and monitoring state
   after restart.
 
+Milestone 7 implemented scoped Microsoft Entra Cloud Sync:
+
+- Installed and registered the Microsoft Entra provisioning agent on the
+  dedicated `SYNC01` member server.
+- Created a Cloud Sync configuration for `corporate.test` with password hash
+  synchronization and an explicit protected `IAM-Lab` OU boundary.
+- Validated a single synthetic pilot identity with on-demand provisioning
+  before enabling synchronization for the complete governed scope.
+- Synchronized exactly 33 governed `Corporate Test` users: 30 enabled and
+  three retained disabled leavers, comprising 28 employees and five
+  contractors.
+- Synchronized exactly 15 expected `GG_IAM_*` assigned-membership security
+  groups.
+- Confirmed healthy configuration state, successful provisioning activity,
+  zero failures in the final 24-hour review and non-null synchronization
+  timestamps for all governed users and groups.
+- Proved that the 50 permanent SOC users and five disabled IDTR users remained
+  outside the synchronization boundary.
+- Added a reusable read-only Microsoft Graph validation script for independent
+  cloud-state verification.
+
 See the complete [baseline and recovery checkpoint record](docs/Baseline-and-Recovery-Checkpoint.md).
 See the [dedicated synchronization-server foundation](docs/Dedicated-Sync-Server-Foundation.md)
 and the [Cloud Sync architecture decision](architecture/Cloud-Sync-Architecture-Decision.md).
@@ -211,6 +232,9 @@ for the Milestone 5 workflow, least-privilege sequence and audit evidence.
 See the [controlled leaver containment and recovery](docs/Controlled-Leaver-Containment-and-Recovery.md)
 and the [leaver operations runbook](runbooks/03-controlled-leaver-containment-and-recovery.md)
 for the Milestone 6 workflow, fail-safe resume and governed recovery evidence.
+See the [scoped Microsoft Entra Cloud Sync deployment and validation](docs/Scoped-Microsoft-Entra-Cloud-Sync.md)
+for the Milestone 7 configuration boundary, pilot rollout and verified cloud
+state.
 
 ## Evidence highlights
 
@@ -320,6 +344,32 @@ for the Milestone 6 workflow, fail-safe resume and governed recovery evidence.
 
 ![Post-snapshot leaver validation](screenshots/m06-14-dc01-post-snapshot-leaver-validation.png)
 
+### Scoped Microsoft Entra Cloud Sync
+
+![Pre-sync tenant baseline](screenshots/m07-01-entra-tenant-pre-sync-baseline.png)
+
+![Empty Cloud Sync configuration baseline](screenshots/m07-02-cloud-sync-empty-configuration-baseline.png)
+
+![SYNC01 agent local validation](screenshots/m07-03-sync01-agent-local-validation.png)
+
+![Scoped organisational units](screenshots/m07-04-cloud-sync-scoped-organizational-units.png)
+
+![Cloud Sync configuration review](screenshots/m07-05-cloud-sync-configuration-review.png)
+
+![Pilot on-demand provisioning](screenshots/m07-06-cloud-sync-pilot-provisioning.png)
+
+![Healthy Cloud Sync configuration](screenshots/m07-07-cloud-sync-healthy-configuration.png)
+
+![Cloud Sync provisioning activity](screenshots/m07-08-cloud-sync-provisioning-activity.png)
+
+![Zero Cloud Sync provisioning failures](screenshots/m07-09-cloud-sync-zero-failure-provisioning-log.png)
+
+![Synchronized governed users](screenshots/m07-10-entra-synced-users.png)
+
+![Synchronized IAM security groups](screenshots/m07-11-entra-synced-groups.png)
+
+![Comprehensive Cloud Sync validation](screenshots/m07-12-cloud-sync-comprehensive-validation.png)
+
 ## Lifecycle scope
 
 The project implements three controlled workflows.
@@ -361,7 +411,7 @@ The project implements three controlled workflows.
 | 4 | Joiner provisioning automation and validation | Complete |
 | 5 | Mover access-transition automation and validation | Complete |
 | 6 | Leaver containment, recovery and validation | Complete |
-| 7 | Scoped Microsoft Entra synchronization and cloud-state validation | Planned |
+| 7 | Scoped Microsoft Entra synchronization and cloud-state validation | Complete |
 | 8 | Integrated lifecycle testing and portfolio quality review | Planned |
 
 Milestone boundaries may be refined when a technical dependency requires a
@@ -385,6 +435,7 @@ different validation order, but the project scope will remain unchanged.
 - [Contain approved leavers](scripts/Invoke-IAMProject1LeaverContainment.ps1)
 - [Perform an approved leaver recovery](scripts/Restore-IAMProject1Leaver.ps1)
 - [Validate leaver, recovery, audit and preserved environment state](scripts/Test-IAMProject1LeaverState.ps1)
+- [Validate the synchronized Microsoft Entra population](scripts/Test-IAMProject1CloudSyncState.ps1)
 
 ### Data
 
@@ -416,6 +467,7 @@ different validation order, but the project scope will remain unchanged.
 - [Controlled leaver containment and recovery](docs/Controlled-Leaver-Containment-and-Recovery.md)
 - [Controlled leaver operations runbook](runbooks/03-controlled-leaver-containment-and-recovery.md)
 - [Microsoft Entra Cloud Sync architecture decision](architecture/Cloud-Sync-Architecture-Decision.md)
+- [Scoped Microsoft Entra Cloud Sync deployment and validation](docs/Scoped-Microsoft-Entra-Cloud-Sync.md)
 
 ## Repository contents
 
@@ -451,10 +503,6 @@ packages and is not part of the public repository.
 ## Current limitations
 
 - The current laboratory has one domain controller.
-- Microsoft Entra synchronization has not yet been enabled.
-- Joiner, mover and leaver automation are complete; cloud synchronization and
-  cloud-state validation remain pending.
-- The Cloud Sync provisioning agent has not yet been installed or registered.
 - The laboratory will use one Cloud Sync agent; a production design should use
   multiple agents when high availability is required.
 - VMware checkpoints provide laboratory rollback, not production backup or
