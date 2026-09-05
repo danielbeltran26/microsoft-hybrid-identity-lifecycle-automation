@@ -10,16 +10,16 @@ evidence and recoverable change controls.
 
 | Project attribute | Current value |
 |---|---|
-| Status | In progress — Milestone 5 validated |
+| Status | In progress — Milestone 6 validated |
 | Active Directory domain | `corporate.test` |
 | Authoritative identity source | Active Directory Domain Services |
 | Existing domain controller | `DC01.corporate.test` |
 | Synchronization server | `SYNC01.corporate.test` — dedicated member server |
 | Synchronization technology | Microsoft Entra Cloud Sync — selected, agent installation pending |
-| Controlled IAM identities | 33 active synthetic users — 28 employees and five contractors |
+| Controlled IAM identities | 33 retained synthetic users — 30 enabled; 28 employees and five contractors |
 | Controlled departments | Finance, Human Resources, Information Technology, Sales, Operations and Contractors |
 | Synchronization boundary | Protected `IAM-Lab` organisational-unit scope only |
-| Recovery checkpoints | Milestone 1 pre-change, paired Milestone 2 infrastructure, Milestone 3 identity foundation, Milestone 4 joiner-automation and Milestone 5 mover-automation checkpoints |
+| Recovery checkpoints | Milestone 1 pre-change, paired Milestone 2 infrastructure, Milestone 3 identity foundation, Milestone 4 joiner-automation, Milestone 5 mover-automation and Milestone 6 leaver-automation checkpoints |
 
 ## Why this project exists
 
@@ -171,6 +171,32 @@ Milestone 5 implemented the controlled mover workflow:
 - Created the powered-off `IAM-P1-M05-Controlled-Mover-Automation` checkpoint
   and validated the complete mover state after restart.
 
+Milestone 6 implemented controlled leaver containment and recovery:
+
+- Accepted three approved synthetic employee departures and verified their
+  source state, request controls, protected target OU and dataset digest before
+  the first directory write.
+- Captured governed pre-change recovery evidence, disabled all three accounts
+  before access removal, removed 15 direct IAM memberships and retained the
+  objects in the protected Leavers OU without deleting accounts or changing
+  passwords.
+- Exercised fail-safe recovery after an initial strict-mode scalar `.Count`
+  error: one identity remained safely contained, two remained unchanged and a
+  corrected script resumed the remaining work without duplicating changes.
+- Proved the interrupted and resumed trail was complete across three disables,
+  15 removals, three OU moves and three lifecycle-description updates with zero
+  unresolved failure.
+- Replayed the corrected workflow and produced three explicit no-change
+  decisions, zero modifications and no unnecessary recovery manifest.
+- Demonstrated separately approved recovery of one incorrectly contained
+  identity, restoring its OU and five authorised memberships before enabling
+  it, then re-contained it to return the lab to the approved leaver state.
+- Preserved all 33 controlled identities while reducing enabled accounts from
+  33 to 30 and approved direct IAM memberships from 155 to 140.
+- Created the powered-off `IAM-P1-M06-Controlled-Leaver-Automation` checkpoint
+  and validated the complete containment, recovery, audit and monitoring state
+  after restart.
+
 See the complete [baseline and recovery checkpoint record](docs/Baseline-and-Recovery-Checkpoint.md).
 See the [dedicated synchronization-server foundation](docs/Dedicated-Sync-Server-Foundation.md)
 and the [Cloud Sync architecture decision](architecture/Cloud-Sync-Architecture-Decision.md).
@@ -182,6 +208,9 @@ for the Milestone 4 workflow, evidence and recovery controls.
 See the [controlled mover access-transition automation](docs/Controlled-Mover-Access-Transition-Automation.md)
 and the [mover operations runbook](runbooks/02-controlled-mover-access-transition.md)
 for the Milestone 5 workflow, least-privilege sequence and audit evidence.
+See the [controlled leaver containment and recovery](docs/Controlled-Leaver-Containment-and-Recovery.md)
+and the [leaver operations runbook](runbooks/03-controlled-leaver-containment-and-recovery.md)
+for the Milestone 6 workflow, fail-safe resume and governed recovery evidence.
 
 ## Evidence highlights
 
@@ -261,9 +290,39 @@ for the Milestone 5 workflow, least-privilege sequence and audit evidence.
 
 ![Post-snapshot mover validation](screenshots/m05-10-dc01-post-snapshot-mover-validation.png)
 
+### Controlled leaver containment and recovery
+
+![Leaver preflight validation](screenshots/m06-01-leaver-preflight-validation.png)
+
+![Approved leaver dataset validation](screenshots/m06-02-approved-leaver-dataset-validation.png)
+
+![DC01 leaver dataset validation](screenshots/m06-03-dc01-leaver-dataset-validation.png)
+
+![Controlled leaver containment](screenshots/m06-04-controlled-leaver-containment.png)
+
+![Interrupted and resumed audit validation](screenshots/m06-05-leaver-recovery-audit-validation.png)
+
+![Approved leavers in Active Directory](screenshots/m06-06-approved-leavers-aduc.png)
+
+![Representative leaver containment](screenshots/m06-07-representative-leaver-containment.png)
+
+![Idempotent leaver replay](screenshots/m06-08-idempotent-leaver-replay.png)
+
+![Idempotent replay audit validation](screenshots/m06-09-idempotent-leaver-replay-audit.png)
+
+![Governed leaver recovery](screenshots/m06-10-governed-leaver-recovery.png)
+
+![Re-contained after governed recovery](screenshots/m06-11-recontained-after-recovery.png)
+
+![Comprehensive leaver validation](screenshots/m06-12-comprehensive-leaver-validation.png)
+
+![Milestone 6 recovery checkpoint](screenshots/m06-13-dc01-leaver-recovery-snapshot.png)
+
+![Post-snapshot leaver validation](screenshots/m06-14-dc01-post-snapshot-leaver-validation.png)
+
 ## Lifecycle scope
 
-The completed project will implement three controlled workflows.
+The project implements three controlled workflows.
 
 ### Joiner
 
@@ -301,7 +360,7 @@ The completed project will implement three controlled workflows.
 | 3 | Isolated IAM directory structure, groups and controlled identity data | Complete |
 | 4 | Joiner provisioning automation and validation | Complete |
 | 5 | Mover access-transition automation and validation | Complete |
-| 6 | Leaver containment, recovery and validation | Planned |
+| 6 | Leaver containment, recovery and validation | Complete |
 | 7 | Scoped Microsoft Entra synchronization and cloud-state validation | Planned |
 | 8 | Integrated lifecycle testing and portfolio quality review | Planned |
 
@@ -323,6 +382,9 @@ different validation order, but the project scope will remain unchanged.
 - [Apply approved mover access transitions](scripts/Invoke-IAMProject1MoverTransition.ps1)
 - [Validate correlated mover audit records](scripts/Test-IAMProject1MoverAudit.ps1)
 - [Validate effective mover and preserved environment state](scripts/Test-IAMProject1MoverState.ps1)
+- [Contain approved leavers](scripts/Invoke-IAMProject1LeaverContainment.ps1)
+- [Perform an approved leaver recovery](scripts/Restore-IAMProject1Leaver.ps1)
+- [Validate leaver, recovery, audit and preserved environment state](scripts/Test-IAMProject1LeaverState.ps1)
 
 ### Data
 
@@ -333,6 +395,14 @@ different validation order, but the project scope will remain unchanged.
 - [Approved three-record mover request dataset](data/iam-project1-mover-requests.csv)
 - [Initial mover transition audit](data/iam-project1-mover-transition-audit.csv)
 - [Idempotent mover replay audit](data/iam-project1-mover-idempotent-replay-audit.csv)
+- [Approved three-record leaver request dataset](data/iam-project1-leaver-requests.csv)
+- [Interrupted leaver containment audit](data/iam-project1-leaver-interrupted-audit.csv)
+- [Authoritative leaver recovery manifest](data/iam-project1-leaver-recovery-manifest.csv)
+- [Resumed leaver containment audit](data/iam-project1-leaver-resumed-audit.csv)
+- [Idempotent leaver replay audit](data/iam-project1-leaver-idempotent-replay-audit.csv)
+- [Governed leaver recovery audit](data/iam-project1-leaver-governed-recovery-audit.csv)
+- [Leaver re-containment audit](data/iam-project1-leaver-recontainment-audit.csv)
+- [Leaver re-containment recovery manifest](data/iam-project1-leaver-recontainment-recovery-manifest.csv)
 
 ### Documentation
 
@@ -343,6 +413,8 @@ different validation order, but the project scope will remain unchanged.
 - [Controlled joiner operations runbook](runbooks/01-controlled-joiner-provisioning.md)
 - [Controlled mover access-transition automation](docs/Controlled-Mover-Access-Transition-Automation.md)
 - [Controlled mover operations runbook](runbooks/02-controlled-mover-access-transition.md)
+- [Controlled leaver containment and recovery](docs/Controlled-Leaver-Containment-and-Recovery.md)
+- [Controlled leaver operations runbook](runbooks/03-controlled-leaver-containment-and-recovery.md)
 - [Microsoft Entra Cloud Sync architecture decision](architecture/Cloud-Sync-Architecture-Decision.md)
 
 ## Repository contents
@@ -380,8 +452,8 @@ packages and is not part of the public repository.
 
 - The current laboratory has one domain controller.
 - Microsoft Entra synchronization has not yet been enabled.
-- Joiner and mover automation are complete; the leaver containment and recovery
-  workflow has not yet been implemented.
+- Joiner, mover and leaver automation are complete; cloud synchronization and
+  cloud-state validation remain pending.
 - The Cloud Sync provisioning agent has not yet been installed or registered.
 - The laboratory will use one Cloud Sync agent; a production design should use
   multiple agents when high availability is required.
